@@ -8,6 +8,8 @@ import BatchRequestRecord from "./tables/batch-request-record"
 import Glossary from "./tables/glossary"
 import GlossarySyncSnapshot from "./tables/glossary-sync-snapshot"
 import GlossaryTerm from "./tables/glossary-term"
+import StudyCard from "./tables/study-card"
+import StudyNote from "./tables/study-note"
 import TranslationCache from "./tables/translation-cache"
 
 export default class AppDB extends Dexie {
@@ -24,6 +26,10 @@ export default class AppDB extends Dexie {
   glossaryTerm!: EntityTable<GlossaryTerm, "id">
 
   glossarySyncSnapshot!: EntityTable<GlossarySyncSnapshot, "id">
+
+  studyNote!: EntityTable<StudyNote, "id">
+
+  studyCard!: EntityTable<StudyCard, "id">
 
   constructor() {
     super(`${upperCamelCase(APP_NAME)}DB`)
@@ -154,6 +160,45 @@ export default class AppDB extends Dexie {
       glossarySyncSnapshot: `
         id`,
     })
+    // v7 is local-only study data. It has neither an account adapter nor a
+    // cleanup task: notes and review history belong to the browser profile.
+    this.version(7).stores({
+      translationCache: `
+        key,
+        translation,
+        createdAt`,
+      batchRequestRecord: `
+        key,
+        createdAt,
+        originalRequestCount,
+        provider,
+        model`,
+      articleSummaryCache: `
+        key,
+        createdAt`,
+      aiSegmentationCache: `
+        key,
+        createdAt`,
+      glossary: `
+        id,
+        enabled,
+        createdAt`,
+      glossaryTerm: `
+        id,
+        glossaryId,
+        &[glossaryId+targetLang+matchKey],
+        enabled,
+        updatedAt`,
+      glossarySyncSnapshot: `
+        id`,
+      studyNote: `
+        id,
+        updatedAt`,
+      studyCard: `
+        id,
+        noteId,
+        dueAt`,
+    })
     this.translationCache.mapToClass(TranslationCache)
     this.batchRequestRecord.mapToClass(BatchRequestRecord)
     this.articleSummaryCache.mapToClass(ArticleSummaryCache)
@@ -161,5 +206,7 @@ export default class AppDB extends Dexie {
     this.glossary.mapToClass(Glossary)
     this.glossaryTerm.mapToClass(GlossaryTerm)
     this.glossarySyncSnapshot.mapToClass(GlossarySyncSnapshot)
+    this.studyNote.mapToClass(StudyNote)
+    this.studyCard.mapToClass(StudyCard)
   }
 }

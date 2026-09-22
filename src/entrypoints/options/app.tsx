@@ -46,14 +46,14 @@ const GlossaryEditorPage = lazy(() =>
     default: module.GlossaryEditorPage,
   })),
 )
+const LocalStudyPage = lazy(() =>
+  import("./pages/local-study").then((module) => ({ default: module.LocalStudyPage })),
+)
 
 /** Advanced has no page of its own; its group's only entry is the glossary. */
 function AdvancedRedirect() {
   return <Navigate to="/advanced/glossary" replace />
 }
-const HelpAndCommunityPage = lazy(() =>
-  import("./pages/help-and-community").then((module) => ({ default: module.HelpAndCommunityPage })),
-)
 const CustomCssPage = lazy(() =>
   import("./pages/translation/translation-style/custom-css").then((module) => ({
     default: module.CustomCssPage,
@@ -134,9 +134,9 @@ const ROUTE_COMPONENTS: Record<RoutePath, ComponentType> = {
   "/input-translation": InputTranslationPage,
   "/tts": TextToSpeechPage,
   "/advanced": AdvancedRedirect,
-  "/help-and-community": HelpAndCommunityPage,
   "/advanced/glossary": GlossaryPage,
   "/advanced/glossary/:glossaryId": GlossaryEditorPage,
+  "/local-study": LocalStudyPage,
   "/preference/config-backup": ConfigBackupPage,
   "/preference/extension-activation": ExtensionActivationPage,
   "/page-translation/custom-css": CustomCssPage,

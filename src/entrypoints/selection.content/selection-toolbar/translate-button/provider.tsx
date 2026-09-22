@@ -24,7 +24,6 @@ import {
   useRef,
   useState,
 } from "react"
-import { useHostedAiProviderOptions } from "@/components/llm-providers/use-hosted-ai-provider-options"
 import { toastManager } from "@/components/ui/base-ui/toast"
 import { SelectionPopover } from "@/components/ui/selection-popover"
 import { ANALYTICS_FEATURE, ANALYTICS_SURFACE } from "@/types/analytics"
@@ -62,7 +61,6 @@ import {
   selectionSessionAtom,
   selectionToolbarTranslateRequestAtom,
 } from "../atoms"
-import { isSaveToNotebaseDialogOpenAtom } from "../custom-action-button/save-to-notebase-dialog-atom"
 import {
   createSelectionToolbarPrecheckError,
   createSelectionToolbarRuntimeError,
@@ -310,17 +308,13 @@ async function translateWithStandardProvider({
 }
 
 /**
- * Keeps the hosted-status hook inside SelectionPopover.Content, which stays
- * unmounted until the popover first opens — the selection app mounts on every
- * page, and merely loading a page must not fire hosted-AI session/status
- * requests. Mirrors CustomActionFooterContent.
+ * The fork only exposes locally configured providers.
  */
 function TranslateFooterContent({
   providers,
   ...props
 }: ComponentProps<typeof SelectionToolbarFooterContent>) {
-  const translateProviders = useHostedAiProviderOptions("selectionTranslation", providers)
-  return <SelectionToolbarFooterContent providers={translateProviders} {...props} />
+  return <SelectionToolbarFooterContent providers={providers} {...props} />
 }
 
 interface SelectionTranslationContextValue {
@@ -381,7 +375,6 @@ export function SelectionTranslationProvider({ children }: { children: ReactNode
     [providersConfig],
   )
   const translateRequestKey = useMemo(() => JSON.stringify(translateRequest), [translateRequest])
-  const isSaveToNotebaseDialogOpen = useAtomValue(isSaveToNotebaseDialogOpenAtom)
   const {
     suggestion: noteSuggestion,
     maybeFire: maybeFireNoteSuggestion,
@@ -833,7 +826,6 @@ export function SelectionTranslationProvider({ children }: { children: ReactNode
         onAnchorChange={setAnchor}
         actionsRef={popoverActionsRef}
         onReuseRequest={handleReuseRequest}
-        disablePointerDismissal={isSaveToNotebaseDialogOpen}
       >
         {children}
         <SelectionPopover.Content

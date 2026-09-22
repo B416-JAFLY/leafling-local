@@ -16,11 +16,9 @@ import { Label } from "@/components/ui/base-ui/label"
 import { Switch } from "@/components/ui/base-ui/switch"
 import { toastManager } from "@/components/ui/base-ui/toast"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
-import { findSelectionToolbarAction } from "@/utils/custom-actions"
 import { i18n } from "@/utils/i18n"
 import { trackNoteSuggestionEvent } from "@/utils/note-suggestion/analytics"
-import { getOutputSchemaFingerprint } from "@/utils/notebase/pending-save"
-import { useSaveToNotebase } from "../custom-action-button/use-save-to-notebase"
+import { createStudyNote } from "@/utils/study/local-study"
 
 function formatNoteValue(value: string | number | null): string | null {
   if (value === null) {
@@ -82,8 +80,7 @@ export function NoteSuggestionCard({
 }) {
   const { sessionKey, validated, actionSnapshot, firedAt, analyticsProvider } = suggestion
   const [selectionToolbar, setSelectionToolbar] = useAtom(configFieldsAtomMap.selectionToolbar)
-  const { save, isSaving } = useSaveToNotebase()
-  const [saveState, setSaveState] = useState<"idle" | "saved" | "stale">("idle")
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle")
   const checkboxBaseId = useId()
   const [selectedNoteIndexes, setSelectedNoteIndexes] = useState(
     () => new Set(validated.notes.map((_note, index) => index)),
@@ -122,40 +119,52 @@ export function NoteSuggestionCard({
   const selectedNotes = validated.notes.filter((_note, index) => selectedNoteIndexes.has(index))
 
   const handleSave = async () => {
-    const liveAction = findSelectionToolbarAction(selectionToolbar, actionSnapshot.id)
-    if (
-      !liveAction ||
-      getOutputSchemaFingerprint(liveAction.outputSchema) !==
-        getOutputSchemaFingerprint(actionSnapshot.outputSchema)
-    ) {
-      toastManager.add({ type: "error", title: i18n.t("noteSuggestion.staleSuggestion") })
-      setSaveState("stale")
+    const records = selectedNotes
+      .map((note) => {
+        const term = formatNoteValue(note[primaryFieldName] ?? null)
+        const definition = secondaryFieldNames
+          .map((fieldName) => formatNoteValue(note[fieldName] ?? null))
+          .filter((value): value is string => value !== null)
+          .join(" · ")
+        return term && definition ? { term, definition } : null
+      })
+      .filter((record): record is { term: string; definition: string } => record !== null)
+
+    if (records.length === 0) {
+      toastManager.add({ type: "error", title: "没有可保存的本地笔记" })
       return
     }
 
-    const outcome = await save({
-      action: liveAction,
-      results: selectedNotes,
-      analyticsSource: "note_suggestion",
-      analyticsProvider,
-    })
-    if (outcome === "saved") {
+    setSaveState("saving")
+    try {
+      await Promise.all(
+        records.map((record) =>
+          createStudyNote({
+            ...record,
+            sourceUrl: window.location.href,
+          }),
+        ),
+      )
       setSaveState("saved")
       trackNoteSuggestionEvent("suggestion_accepted", {
         startedAt: firedAt,
-        actionName: liveAction.name,
+        actionName: actionSnapshot.name,
         provider: analyticsProvider,
       })
+    } catch {
+      toastManager.add({ type: "error", title: "保存到本地学习库失败" })
+      setSaveState("idle")
     }
   }
 
-  const isInteractionDisabled = isSaving || saveState !== "idle"
+  const isInteractionDisabled = saveState !== "idle"
   const isButtonDisabled = isInteractionDisabled || selectedNotes.length === 0
-  const buttonLabel = isSaving
-    ? i18n.t("action.saveToNotebaseSaving")
-    : saveState === "saved"
-      ? i18n.t("noteSuggestion.saved")
-      : i18n.t("noteSuggestion.save")
+  const buttonLabel =
+    saveState === "saving"
+      ? "保存到本地中…"
+      : saveState === "saved"
+        ? "已保存到本地"
+        : "保存到本地学习库"
 
   return (
     <div

@@ -14,7 +14,7 @@ export const ROUTE_DEFS = [
   // Advanced is a sidebar GROUP with no page of its own; this path only exists
   // so links made before that change still land somewhere.
   { path: "/advanced" },
-  { path: "/help-and-community" },
+  { path: "/local-study" },
 
   // Detail pages drilled into from a `ConfigNavItem`. They own no sidebar entry — the
   // sidebar lists its links itself — but route exactly like any other page.

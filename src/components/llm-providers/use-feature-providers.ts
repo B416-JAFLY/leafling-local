@@ -14,7 +14,6 @@ import { getSelectionToolbarActions, patchSelectionToolbarAction } from "@/utils
 import { isSystemProviderSelectorItem } from "@/utils/providers/provider-display"
 import { getSelectableProvidersForCapability } from "@/utils/providers/provider-registry"
 import { providerSupportsTranslationOnlyMode } from "@/utils/providers/translation-only-gate"
-import { useHostedAiProviderOptions } from "./use-hosted-ai-provider-options"
 
 export interface FeatureProviderBinding {
   providers: ProviderSelectorOption[]
@@ -48,7 +47,9 @@ export function useFeatureProvider(featureKey: FeatureKey): FeatureProviderBindi
         providerSupportsTranslationOnlyMode(option.provider),
     )
   }, [featureKey, providersConfig, hideTranslationOnlyUnsupported])
-  const providers = useHostedAiProviderOptions(featureKey, baseProviders)
+  // Leafling only exposes providers configured by the user. Do not query the
+  // upstream hosted-AI status endpoint while rendering this UI.
+  const providers = baseProviders
 
   const setProviderId = useCallback(
     (id: string) => void setConfig(buildFeatureProviderPatch({ [featureKey]: id })),
@@ -81,7 +82,7 @@ export function useCustomActionProviders(): CustomActionProvidersBinding {
     () => getSelectableProvidersForCapability("customAction", providersConfig),
     [providersConfig],
   )
-  const providers = useHostedAiProviderOptions("customAction", baseProviders)
+  const providers = baseProviders
 
   const actions = useMemo(
     () =>

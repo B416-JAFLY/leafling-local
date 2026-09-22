@@ -3,7 +3,6 @@ import type { SelectionSession } from "../atoms"
 import type { SelectionPopoverActions } from "@/components/ui/selection-popover"
 import { useAtomValue, useSetAtom } from "jotai"
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useHostedAiProviderOptions } from "@/components/llm-providers/use-hosted-ai-provider-options"
 import { toastManager } from "@/components/ui/base-ui/toast"
 import { SelectionPopover } from "@/components/ui/selection-popover"
 import { ANALYTICS_FEATURE, ANALYTICS_SURFACE } from "@/types/analytics"
@@ -31,9 +30,6 @@ import { createSelectionToolbarPrecheckError } from "../inline-error"
 import { useSelectionOpenRequestResolver } from "../use-selection-open-request"
 import { CustomActionContent } from "./custom-action-content"
 import { CustomActionToolButton } from "./custom-action-tool-button"
-import { SaveToNotebaseButton } from "./save-to-notebase-button"
-import { isSaveToNotebaseDialogOpenAtom } from "./save-to-notebase-dialog-atom"
-import { SaveToNotebaseDialogHost } from "./save-to-notebase-dialog-host"
 import {
   buildCustomActionExecutionPlan,
   useCustomActionExecution,
@@ -54,17 +50,13 @@ interface SelectionCustomActionContextValue {
 const SelectionCustomActionContext = createContext<SelectionCustomActionContextValue | null>(null)
 
 /**
- * Keeps the hosted-status hook inside SelectionPopover.Content, which stays
- * unmounted until the popover first opens — the selection app mounts on every
- * page, and merely loading a page must not fire hosted-AI session/status
- * requests.
+ * Only locally configured providers are exposed by this fork.
  */
 function CustomActionFooterContent({
   providers,
   ...props
 }: ComponentProps<typeof SelectionToolbarFooterContent>) {
-  const customActionProviders = useHostedAiProviderOptions("customAction", providers)
-  return <SelectionToolbarFooterContent providers={customActionProviders} {...props} />
+  return <SelectionToolbarFooterContent providers={providers} {...props} />
 }
 
 function useSelectionCustomActionContext() {
@@ -100,7 +92,6 @@ export function SelectionCustomActionProvider({ children }: { children: ReactNod
   const language = useAtomValue(configFieldsAtomMap.language)
   const setIsSelectionToolbarOpen = useSetAtom(isSelectionToolbarOpenAtom)
   const setConfig = useSetAtom(writeConfigAtom)
-  const isSaveToNotebaseDialogOpen = useAtomValue(isSaveToNotebaseDialogOpenAtom)
   const bodyRef = useRef<HTMLDivElement>(null)
   const pendingOpenRequestRef = useRef<SelectionCustomActionPendingOpenRequest | null>(null)
   const popoverActionsRef = useRef<SelectionPopoverActions | null>(null)
@@ -389,7 +380,6 @@ export function SelectionCustomActionProvider({ children }: { children: ReactNod
         onAnchorChange={setAnchor}
         actionsRef={popoverActionsRef}
         onReuseRequest={handleReuseRequest}
-        disablePointerDismissal={isSaveToNotebaseDialogOpen}
       >
         <SelectionPopover.Content
           key={popoverSessionKey}
@@ -429,18 +419,12 @@ export function SelectionCustomActionProvider({ children }: { children: ReactNod
           >
             {activeAction && (
               <>
-                <SaveToNotebaseButton
-                  action={activeAction}
-                  isRunning={displayedIsRunning}
-                  result={displayedResult}
-                />
                 <CustomActionToolButton action={activeAction} />
               </>
             )}
           </CustomActionFooterContent>
         </SelectionPopover.Content>
       </SelectionPopover.Root>
-      <SaveToNotebaseDialogHost />
     </SelectionCustomActionContext>
   )
 }

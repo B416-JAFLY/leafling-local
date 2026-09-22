@@ -1,8 +1,6 @@
 import { useAtom, useAtomValue } from "jotai"
 import { useMemo } from "react"
 import ProviderSelector from "@/components/llm-providers/provider-selector"
-import { useHostedAiProviderOptions } from "@/components/llm-providers/use-hosted-ai-provider-options"
-import { useHostedAiStatus } from "@/components/llm-providers/use-hosted-ai-status"
 import { Label } from "@/components/ui/base-ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/base-ui/radio-group"
 import { configFieldsAtomMap } from "@/utils/atoms/config"
@@ -18,21 +16,14 @@ export function LanguageDetectionConfig() {
   const [languageDetection, setLanguageDetection] = useAtom(configFieldsAtomMap.languageDetection)
   const providersConfig = useAtomValue(configFieldsAtomMap.providersConfig)
 
-  // Capability-based so Built-in AI appears: it is synthesized by the provider
-  // registry rather than stored in providersConfig, so the old
-  // getEnabledLLMProvidersConfig filter could never surface it.
+  // Capability-based so only compatible locally configured providers appear.
   const selectableProviders = useMemo(
     () => getSelectableProvidersForCapability("languageDetection", providersConfig),
     [providersConfig],
   )
-  // Adds the Ultra badge and grays out tiers this account cannot run, matching
-  // every other provider dropdown.
-  const providerOptions = useHostedAiProviderOptions("languageDetection", selectableProviders)
-  const { status } = useHostedAiStatus()
+  const providerOptions = selectableProviders
 
-  // Local providers do not carry a disabled flag, while Built-in AI can be
-  // disabled by account access. Count every selectable option so a configured
-  // local LLM keeps this control usable even when hosted AI is unavailable.
+  // A locally configured LLM keeps this control usable.
   const hasProviders = providerOptions.some((option) => !isProviderSelectorOptionDisabled(option))
   const isLLMMode = languageDetection.mode === "llm"
 
@@ -82,7 +73,7 @@ export function LanguageDetectionConfig() {
                 languageDetection,
                 value,
                 providersConfig,
-                status,
+                undefined,
               )
 
               // No provider can run LLM detection for this account, so arming

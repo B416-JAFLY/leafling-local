@@ -12,7 +12,8 @@ import {
 const WXT_API_KEY_PATTERN = /^WXT_.*API_KEY/
 const ALLOWED_BUNDLED_API_KEYS = new Set(["WXT_POSTHOG_API_KEY"])
 const useLocalPackages = isLocalPackagesEnabled(process.env)
-const shouldSkipEnvValidation = process.env.WXT_SKIP_ENV_VALIDATION === "true"
+// A local BYOK build has no mandatory analytics/OAuth configuration.
+const shouldSkipEnvValidation = true
 // Root of the read-frog monorepo whose source is aliased in when developing
 // with local packages. Defaults to the sibling checkout; override with
 // WXT_MONOREPO_PATH to point at a git worktree (relative or absolute).
@@ -34,8 +35,14 @@ export default defineConfig({
       }
     : {},
   manifest: ({ mode, browser }) => ({
-    name: "__MSG_extName__",
-    description: "__MSG_extDescription__",
+    // Independently named, local BYOK fork. Do not inherit upstream branding
+    // through shared locale files.
+    name: "Leafling Local",
+    description:
+      "A local-first browser translator and study companion. Bring your own AI provider.",
+    action: {
+      default_title: "Leafling Local",
+    },
     default_locale: "en",
     // Fixed extension ID for development
     ...(mode === "development" &&

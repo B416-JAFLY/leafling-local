@@ -1,6 +1,5 @@
 import { recordFeatureActiveDay } from "@/utils/feature-active-days"
 import { onMessage } from "@/utils/message"
-import { captureFeatureUsedEventInBackground } from "./analytics"
 
 /**
  * Sole subscriber to the feature-used event, fanning it out to the two consumers that
@@ -21,6 +20,7 @@ export function setupFeatureUsedEventHandlers(): void {
       void recordFeatureActiveDay()
     }
 
-    await captureFeatureUsedEventInBackground(message.data)
+    // The fork intentionally keeps feature activity local.  Do not emit
+    // telemetry to an upstream analytics service.
   })
 }

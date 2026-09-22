@@ -46,6 +46,16 @@ export function FeaturesNav() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
+              render={<Link to="/local-study" />}
+              isActive={pathname === "/local-study"}
+              tooltip="本地学习库"
+            >
+              <Icon icon="tabler:cards" />
+              <span>本地学习库</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
               render={<Link to="/custom-actions" />}
               isActive={pathname === "/custom-actions"}
               tooltip={i18n.t("options.selectionToolbar.customActions.title")}

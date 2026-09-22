@@ -10,7 +10,9 @@
  */
 
 /** Origins whose pages may ask the extension to open a provider's config. */
-export const PARTNER_BRIDGE_ORIGINS = ["https://www.jalapeno-cloud.ai"] as const
+// This fork has no commercial provider bridge. Keeping the empty tuple makes
+// the entrypoint inert without granting a partner site options-page access.
+export const PARTNER_BRIDGE_ORIGINS: readonly string[] = []
 
 /** Marks a message as coming from a partner page rather than from the extension. */
 export const PARTNER_BRIDGE_REQUEST_SOURCE = "read-frog-partner-page"

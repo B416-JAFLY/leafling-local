@@ -7,7 +7,6 @@ import {
   requestEditorNavigationAtom,
 } from "@/components/form/autosave-navigation"
 import { toAutosaveSession } from "@/components/form/use-autosave"
-import { useHostedAiStatus } from "@/components/llm-providers/use-hosted-ai-status"
 import { toastManager } from "@/components/ui/base-ui/toast"
 import {
   isAPIProviderConfig,
@@ -70,10 +69,7 @@ function EditableProviderConfig({ providerConfig }: { providerConfig: APIProvide
   const setAllProvidersConfig = useSetAtom(configFieldsAtomMap.providersConfig)
   const setConfig = useSetAtom(writeConfigAtom)
   const config = useAtomValue(configAtom)
-  // Decides which built-in tiers count as usable below. Unknown status reads as
-  // usable, so an unreachable status endpoint never traps someone with a
-  // credential they want gone.
-  const { status: hostedAiStatus } = useHostedAiStatus()
+  const hostedAiStatus = undefined
   const patchProvider = useSetAtom(patchProviderConfigAtom)
   const { form, autosave } = useProviderForm(providerConfig, async (_snapshot, changes) => {
     await patchProvider({ id: providerConfig.id, changes })

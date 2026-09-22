@@ -1,3 +1,14 @@
+# Leafling Local
+
+Leafling Local is an independently maintained, local-first and bring-your-own-key fork of [Read Frog](https://github.com/mengxi-ream/read-frog). It retains immersive translation and study workflows while removing the hosted account, subscription, partner-promotion, and vendor-bridge paths.
+
+- Configure your own compatible LLM provider and API key in the extension.
+- Notes and review cards are stored locally in the browser.
+- This repository is distributed under **GPL-3.0-or-later**; see [LICENSE](./LICENSE) and [FORK_NOTICE.md](./FORK_NOTICE.md).
+- It is not affiliated with, endorsed by, or supported by the original Read Frog service. The upstream documentation below is retained for attribution and historical reference; hosted-service instructions do not apply to this fork.
+
+---
+
 <div align="center"><a name="readme-top"></a>
 
 [![Read Frog banner][image-banner]][website]

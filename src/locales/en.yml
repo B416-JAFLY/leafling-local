@@ -1,6 +1,6 @@
-name: Read Frog
-extName: "Read Frog - Translate & Learn"
-extDescription: Read Frog is an open source browser extension designed to help you learn languages deeply from any website.
+name: Leafling Local
+extName: "Leafling Local - Translate & Learn"
+extDescription: Leafling Local is a local-first browser extension for language learning with your own AI provider.
 uninstallSurveyUrl: https://tally.so/r/nPK6Ob
 account:
   login: Log in

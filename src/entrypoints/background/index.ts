@@ -1,7 +1,6 @@
 import "@/utils/zod-config"
 import type { Config, UiLanguage } from "@/types/config/config"
 import { browser, defineBackground } from "#imports"
-import { env } from "@/env"
 import { storageAdapter } from "@/utils/atoms/storage-adapter"
 import { selectFreshTranslateProviders } from "@/utils/config/default-translate-provider"
 import { CONFIG_STORAGE_KEY } from "@/utils/constants/config"
@@ -26,19 +25,16 @@ import {
 import { setupEdgeTTSMessageHandlers } from "./edge-tts"
 import { setupFeatureUsedEventHandlers } from "./feature-used-event"
 import { setupGlossaryMessageHandlers } from "./glossary"
-import { setupHostedAiStatusHandler } from "./hosted-ai-status"
 import { setupIframeInjection } from "./iframe-injection"
 import { setupLLMGenerateTextMessageHandlers } from "./llm-generate-text"
 import { initMockData } from "./mock-data"
 import { newUserGuide } from "./new-user-guide"
-import { setupNotebasePendingSaveProcessor } from "./notebase-pending-save"
 import { setupPageTranslationHandlers } from "./page-translation"
 import { proxyFetch } from "./proxy-fetch"
 import { setupSidePanelMessageHandler } from "./side-panel"
 import { setupSubtitlesTranslationHandlers } from "./subtitles-translation"
 import { translationMessage } from "./translation-signal"
 import { setupTTSPlaybackMessageHandlers } from "./tts-playback"
-import { setupUninstallSurvey } from "./uninstall-survey"
 import { setupVideoSummaryHandlers } from "./video-summary"
 
 export default defineBackground({
@@ -56,9 +52,7 @@ export default defineBackground({
 
       // Open tutorial page when extension is installed
       if (details.reason === "install") {
-        await browser.tabs.create({
-          url: `${env.WXT_WEBSITE_URL}/guide/step-1`,
-        })
+        await browser.runtime.openOptionsPage()
       }
 
       // Deliberately last: probing Google Translate can hang for seconds on networks that
@@ -149,9 +143,7 @@ export default defineBackground({
     })()
 
     proxyFetch()
-    setupHostedAiStatusHandler()
     setupGlossaryMessageHandlers()
-    setupNotebasePendingSaveProcessor(() => backgroundReady)
     setupEdgeTTSMessageHandlers()
     setupLLMGenerateTextMessageHandlers()
     setupTTSPlaybackMessageHandlers()
@@ -161,26 +153,21 @@ export default defineBackground({
     setupIframeInjection()
 
     // i18n bootstrap for the non-React background context. Runs after the synchronous
-    // listener registration above (MV3 requires listeners before the first await). The
-    // context menu and the uninstall-survey URL both resolve i18n.t at registration time,
-    // so they must be created AFTER initI18n or they freeze in the wrong language.
+    // listener registration above (MV3 requires listeners before the first await).
     void (async () => {
       await backgroundReady
       void initializeContextMenu()
-      await setupUninstallSurvey()
     })()
 
     // Keep background-resolved strings in the selected language when it changes.
     // The context menu re-creates itself via its own config watcher
-    // (registerContextMenuListeners), so here we only drive the i18next singleton and
-    // re-set the frozen (localized) uninstall-survey URL.
+    // (registerContextMenuListeners), so here we only drive the i18next singleton.
     storageAdapter.watch<Config>(CONFIG_STORAGE_KEY, (newConfig) => {
       void (async () => {
         await backgroundReady
         if (newConfig.uiLanguage === currentUiLanguage) return
         currentUiLanguage = newConfig.uiLanguage
         await setUiLanguage(newConfig.uiLanguage)
-        await setupUninstallSurvey()
       })()
     })
   },

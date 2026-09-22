@@ -1,6 +1,6 @@
-name: 陪讀蛙
-extName: 陪讀蛙 - 翻譯與學習
-extDescription: 陪讀蛙是一款開放原始碼的瀏覽器擴充功能，能協助使用者在任何網站上深入學習語言。
+name: Leafling Local
+extName: Leafling Local - 翻譯與學習
+extDescription: Leafling Local 是一款本機優先的瀏覽器擴充功能，可使用您自己的 AI 提供者進行語言學習。
 uninstallSurveyUrl: https://tally.so/r/3E9XDL
 account:
   login: 登入

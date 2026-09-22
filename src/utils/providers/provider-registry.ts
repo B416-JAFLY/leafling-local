@@ -6,28 +6,17 @@ import type {
   ProviderSelectorOption,
   SystemProviderSelectorItem,
 } from "@/utils/providers/provider-display"
-import readFrogLogo from "@/assets/providers/read-frog-provider.png?url&no-inline"
 import { isLLMProviderConfig, isTranslateProviderConfig } from "@/types/config/provider"
-import {
-  BUILT_IN_AI_PROVIDER_ID,
-  BUILT_IN_AI_PROVIDER_IDS,
-  BUILT_IN_AI_ADVANCE_PROVIDER_ID,
-  type BuiltInAiProviderId,
-  type HostedAiModelTier,
-} from "@/utils/constants/provider-ids"
+import { type BuiltInAiProviderId, type HostedAiModelTier } from "@/utils/constants/provider-ids"
 import { i18n } from "@/utils/i18n"
 
 export {
   BUILT_IN_AI_PROVIDER_ID,
   BUILT_IN_AI_ADVANCE_PROVIDER_ID,
 } from "@/utils/constants/provider-ids"
-export const BUILT_IN_AI_PROVIDER_LOGO = readFrogLogo
 
-const BUILT_IN_AI_PROVIDER_NAME_KEY = "options.apiProviders.providers.name.builtInAi"
-const BUILT_IN_AI_PROVIDER_FALLBACK_NAME = "Built-in AI"
-const BUILT_IN_AI_ADVANCE_PROVIDER_NAME_KEY = "options.apiProviders.providers.name.builtInAiAdvance"
-const BUILT_IN_AI_ADVANCE_PROVIDER_FALLBACK_NAME = "Advanced Built-in AI"
-
+/** Kept only for legacy configuration types; the hosted provider is not selectable. */
+export const BUILT_IN_AI_PROVIDER_LOGO = ""
 export type ProviderCapability = FeatureKey | "customAction" | "languageDetection"
 type SystemProviderNameKey = keyof GeneratedI18nStructure
 type ProviderConfigPredicate<T extends ProviderConfig = ProviderConfig> = (
@@ -61,40 +50,13 @@ export type ResolvedProviderRef<T extends ProviderConfig = ProviderConfig> =
   | LocalProviderRef<T>
   | SystemProviderRef
 
-const SYSTEM_PROVIDER_DEFS = {
-  [BUILT_IN_AI_PROVIDER_ID]: {
-    id: BUILT_IN_AI_PROVIDER_ID,
-    modelTier: "normal",
-    nameKey: BUILT_IN_AI_PROVIDER_NAME_KEY,
-    fallbackName: BUILT_IN_AI_PROVIDER_FALLBACK_NAME,
-    capabilities: [
-      "pageTranslation",
-      "selectionTranslation",
-      "videoSubtitles",
-      "inputTranslation",
-      "noteSuggestion",
-      "customAction",
-      "languageDetection",
-    ],
-    logo: () => BUILT_IN_AI_PROVIDER_LOGO,
-  },
-  [BUILT_IN_AI_ADVANCE_PROVIDER_ID]: {
-    id: BUILT_IN_AI_ADVANCE_PROVIDER_ID,
-    modelTier: "advance",
-    nameKey: BUILT_IN_AI_ADVANCE_PROVIDER_NAME_KEY,
-    fallbackName: BUILT_IN_AI_ADVANCE_PROVIDER_FALLBACK_NAME,
-    capabilities: [
-      "pageTranslation",
-      "selectionTranslation",
-      "videoSubtitles",
-      "inputTranslation",
-      "noteSuggestion",
-      "customAction",
-      "languageDetection",
-    ],
-    logo: () => BUILT_IN_AI_PROVIDER_LOGO,
-  },
-} as const satisfies Record<string, SystemProviderDef>
+/**
+ * Hosted upstream AI is intentionally unavailable in this fork. Legacy ids
+ * remain recognised below so an old configuration cannot be mistaken for a
+ * user-supplied provider, but they resolve to no provider and make no upstream
+ * request.
+ */
+const SYSTEM_PROVIDER_DEFS = {} as const satisfies Record<string, SystemProviderDef>
 
 function getSystemProviderDefs(): SystemProviderDef[] {
   return Object.values(SYSTEM_PROVIDER_DEFS)
@@ -149,15 +111,19 @@ function getSystemProviderDef(providerId: string): SystemProviderDef | undefined
 }
 
 export function isBuiltInAiProviderId(providerId: string): providerId is BuiltInAiProviderId {
-  return BUILT_IN_AI_PROVIDER_IDS.includes(providerId as BuiltInAiProviderId)
+  // A pre-fork configuration may still contain an upstream system id. Treat it
+  // as unresolved instead of routing it through the hosted implementation.
+  void providerId
+  return false
 }
 
 export function getBuiltInAiProviderName(providerId: BuiltInAiProviderId): string {
-  return getSystemProviderName(SYSTEM_PROVIDER_DEFS[providerId])
+  return providerId
 }
 
 export function getHostedAiModelTier(providerId: BuiltInAiProviderId): HostedAiModelTier {
-  return providerId === BUILT_IN_AI_ADVANCE_PROVIDER_ID ? "advance" : "normal"
+  void providerId
+  return "normal"
 }
 
 export function isSystemProviderId(providerId: string): boolean {

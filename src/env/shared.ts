@@ -1,10 +1,12 @@
 import { z } from "zod"
 
 export const PRODUCTION_EXTENSION_ENV_DEFAULTS = {
-  WXT_API_URL: "https://api.readfrog.app",
-  WXT_WEBSITE_URL: "https://www.readfrog.app",
-  WXT_OFFICIAL_SITE_ORIGINS: "https://readfrog.app,https://www.readfrog.app",
-  WXT_AUTH_COOKIE_DOMAINS: "readfrog.app",
+  // Deliberately local and inert. A self-hosted companion can override these
+  // values, but a stock build must not fall back to upstream services.
+  WXT_API_URL: "http://127.0.0.1:8787",
+  WXT_WEBSITE_URL: "http://127.0.0.1:8787",
+  WXT_OFFICIAL_SITE_ORIGINS: "http://127.0.0.1:8787",
+  WXT_AUTH_COOKIE_DOMAINS: "127.0.0.1",
 } as const
 
 export const LOCAL_EXTENSION_ENV_DEFAULTS = {

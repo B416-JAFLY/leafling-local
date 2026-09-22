@@ -1,8 +1,8 @@
 {
-  "name": "@read-frog/extension",
+  "name": "leafling-local",
   "version": "1.47.4",
   "private": true,
-  "description": "Read Frog browser extension for language learning",
+  "description": "A local-first, bring-your-own-key browser extension for immersive translation and language study",
   "type": "module",
   "scripts": {
     "build": "wxt build",
